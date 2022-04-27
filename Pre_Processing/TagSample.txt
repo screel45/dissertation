@@ -1,0 +1,128 @@
+*"/"AUX *"/"IN
+*"/"VBD_1_S_N *"/"IN
+*"/"VBD$_1_S_N *"/"IN
+*"/"VBD_1_P_N *"/"IN
+*"/"VBD$_1_P_N *"/"IN
+*"/"VBD_2_S_M *"/"IN
+*"/"VBD$_2_S_M *"/"IN
+*"/"VBD_2_S_F *"/"IN
+*"/"VBD$_2_S_F *"/"IN
+*"/"VBD_2_D_N *"/"IN
+*"/"VBD$_2_D_N *"/"IN
+*"/"VBD_2_P_M *"/"IN
+*"/"VBD$_2_P_M *"/"IN
+*"/"VBD_2_P_F *"/"IN
+*"/"VBD$_2_P_F *"/"IN
+*"/"VBD_3_S_M *"/"IN
+*"/"VBD$_3_S_M *"/"IN
+*"/"VBD_3_S_F *"/"IN
+*"/"VBD$_3_S_F *"/"IN
+*"/"VBD_3_D_M *"/"IN
+*"/"VBD$_3_D_M *"/"IN
+*"/"VBD_3_D_F *"/"IN
+*"/"VBD$_3_D_F *"/"IN
+*"/"VBD_3_P_M *"/"IN
+*"/"VBD$_3_P_M *"/"IN
+*"/"VBD_3_P_F *"/"IN
+*"/"VBD$_3_P_F *"/"IN
+*"/"VBDP_1_S_N *"/"IN
+*"/"VBDP_1_P_N *"/"IN
+*"/"VBDP_2_S_M *"/"IN
+*"/"VBDP_2_S_F *"/"IN
+*"/"VBDP_2_D_N *"/"IN
+*"/"VBDP_2_P_M *"/"IN
+*"/"VBDP_2_P_F *"/"IN
+VBDP_3_S_M
+VBDP_3_S_F
+VBDP_3_D_M
+VBDP_3_D_F
+VBDP_3_P_M
+VBDP_3_P_F
+VBZ_1_S_N
+VBZ$_1_S_N
+VBZ_1_P_N
+VBZ$_1_P_N
+VBZ_2_S_M
+VBZ$_2_S_M
+VBZ_2_S_F
+VBZ$_2_S_F
+VBZ_2_D_N
+VBZ$_2_D_N
+VBZ_2_P_M
+VBZ$_2_P_M
+VBZ_2_P_F
+VBZ$_2_P_F
+VBZ_3_S_M
+VBZ$_3_S_M
+VBZ_3_S_F
+VBZ$_3_S_F
+VBZ_3_D_M
+VBZ$_3_D_M
+VBZ_3_D_F
+VBZ$_3_D_F
+VBZ_3_P_M
+VBZ$_3_P_M
+VBZ_3_P_F
+VBZ$_3_P_F
+VBZP_1_S_N
+VBZP_1_P_N
+VBZP_2_S_M
+VBZP_2_S_F
+VBZP_2_D_N
+VBZP_2_P_M
+VBZP_2_P_F
+VBZP_3_S_M
+VBZP_3_S_F
+VBZP_3_D_M
+VBZP_3_D_F
+VBZP_3_P_M
+VBZP_3_P_F
+VBF_1_S_N
+VBF$_1_S_N
+VBF_1_P_N
+VBF$_1_P_N
+VBF_2_S_M
+VBF$_2_S_M
+VBF_2_S_F
+VBF$_2_S_F
+VBF_2_D_N
+VBF$_2_D_N
+VBF_2_P_M
+VBF$_2_P_M
+VBF_2_P_F
+VBF$_2_P_F
+VBF_3_S_M
+VBF$_3_S_M
+VBF_3_S_F
+VBF$_3_S_F
+VBF_3_D_M
+VBF$_3_D_M
+VBF_3_D_F
+VBF$_3_D_F
+VBF_3_P_M
+VBF$_3_P_M
+VBF_3_P_F
+VBF$_3_P_F
+VBFP_1_S_N
+VBFP_1_P_N
+VBFP_2_S_M
+VBFP_2_S_F
+VBFP_2_D_N
+VBFP_2_P_M
+VBFP_2_P_F
+VBFP_3_S_M
+VBFP_3_S_F
+VBFP_3_D_M
+VBFP_3_D_F
+VBFP_3_P_M
+VBFP_3_P_F
+VBI_2_S_M
+VBI$_2_S_M
+VBI_2_S_F
+VBI$_2_S_F
+VBI_2_D_N
+VBI$_2_D_N
+VBI_2_P_M
+VBI$_2_P_M
+VBI_2_P_F
+VBI$_2_P_F
