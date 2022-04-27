@@ -1,0 +1,2056 @@
+---
+DESCRIPTIVE STATISTICS
+output: html_document
+---
+
+```{r Packages}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(writexl)
+```
+
+
+```{r Normalizing Functions}
+# L1 Arabic
+
+# Whole corpus
+L1Ar_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/3147) * 4244382)/106572775) * 50000
+  return(norm_freq)
+}
+
+# Per genre
+# Encyclopedia
+Ency_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/407) * 468200)/12074459) * 50000
+  return(norm_freq)
+}
+
+# IT
+IT_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/587) * 540892)/10642705) * 50000
+  return(norm_freq)
+}
+
+# Law
+Law_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/407) * 576119)/13990679) * 50000
+  return(norm_freq)
+}
+
+# Military
+Milt_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/397) * 682173)/18984193) * 50000
+  return(norm_freq)
+}
+
+# Medicine
+Med_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/886) * 430031)/12550449) * 50000
+  return(norm_freq)
+}
+
+# News
+News_norm <- function(RAW_FREQ) {
+  norm_freq <- (((RAW_FREQ/463) * 1546967)/38330290) * 50000
+  return(norm_freq)
+}
+
+# ZAEBUC Arabic
+ZAr_norm <- function(RAW_FREQ) {
+  norm_freq <- (RAW_FREQ/32784) * 50000
+  return(norm_freq)
+}
+
+# ZAEBUC English
+ZEn_norm <- function(RAW_FREQ) {
+  norm_freq <- (RAW_FREQ/89904) * 50000
+  return(norm_freq)
+}
+
+# ICLE
+ICLE_norm <- function(RAW_FREQ) {
+  norm_freq <- (RAW_FREQ/3700000) * 50000
+  return(norm_freq)
+}
+
+# LOCNESS
+LOC_norm <- function(RAW_FREQ) {
+  norm_freq <- (RAW_FREQ/324304) * 50000
+  return(norm_freq)
+}
+
+```
+
+```{r}
+ZAr_norm(82)
+ZEn_norm(12)
+ICLE_norm(27)
+LOC_norm(101)
+L1Ar_norm(82)
+```
+```{r}
+ZAr_norm(82)
+ZEn_norm(82)
+ICLE_norm(73)
+LOC_norm(212)
+L1Ar_norm(82)
+```
+
+
+```{r Reading in data}
+L1Arabicdf <- read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/L1Arabic_FinalDataset.xlsx")
+head(L1Arabicdf)
+
+ZAEBUCArabicdf <- read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/ZAEBUCArabic_FinalDataset.xlsx")
+head(ZAEBUCArabicdf)
+
+ZAEBUCEnglishdf_old <- read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/ZAEBUCEnglish_FinalDataset.xlsx", guess_max = 10000)
+head(ZAEBUCEnglishdf_old)
+
+L1L2English_df <-read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/ICLE_LOCNESS_Dataset.xlsx")
+head(L1L2English_df)
+
+
+
+```
+```{r Creating Subset Dataframes}
+
+# New dataframe that does not include VNs or PARTs for L1 Arabic
+
+L1Arabicdf <- L1Arabicdf %>%
+  filter(is.na(VN_PART)) %>%
+  filter(LEMMA_PREP != "كان على")
+L1Arabicdf
+
+ZAEBUCArabicdf <- ZAEBUCArabicdf %>%
+   filter(LEMMA_PREP != "كان على")
+ZAEBUCArabicdf
+
+# New dataframe that does not include participles or Insertion errors for ZAEBUC English
+
+ZAEBUCEnglishdf <- ZAEBUCEnglishdf_old %>%
+  filter(is.na(PART), is.na(ERROR_TYPE))
+head(ZAEBUCEnglishdf)
+
+# New dataframe that separates ICLE (L2 English, NNS) from LOCNESS (L1 English, NS)
+
+ICLEL2English_df <- L1L2English_df %>%
+  filter(NS_NNS == 'NNS')
+
+LOCL1English_df <- L1L2English_df %>%
+  filter(NS_NNS == 'NS')
+
+head(ICLEL2English_df)
+head(LOCL1English_df)
+
+# New dataframe that pulls out just the phrasal verbs from ZAEBUC English (contains prepositional, phrasal, and phrasal-prepositional verbs). Useful for comparison with ICLE and LOCNESS, which only contain phrasal verbs.
+
+ZAEBUCEnglish_PVs_df <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE == 'PV')
+
+head(ZAEBUCEnglish_PVs_df)
+```
+
+
+```{r Basic Overall Totals}
+
+# Number of Unique VPCs - L1 Arabic
+length(unique(L1Arabicdf[["LEMMA_PREP"]]))
+length(L1Arabicdf[["LEMMA_PREP"]])
+
+# Number of Unique VPCs - ZAEBUC Arabic
+length(unique(ZAEBUCArabicdf[["LEMMA_PREP"]]))
+length(ZAEBUCArabicdf[["LEMMA_PREP"]])
+
+# Number of Unique VPCs - ZAEBUC English
+length(unique(ZAEBUCEnglishdf[["LEMMA_PREP"]]))
+length(ZAEBUCEnglishdf[["LEMMA_PREP"]])
+
+# Number of Unique VPCs - ICLE NNS
+length(unique(ICLEL2English_df[["LEMMA_PREP"]]))
+length(ICLEL2English_df[["LEMMA_PREP"]])
+
+# Number of Unique VPCs - LOCNESS NS
+length(unique(LOCL1English_df[["LEMMA_PREP"]]))
+length(LOCL1English_df[["LEMMA_PREP"]])
+
+# Frequencies of VPC types (PrepV, PV, or PPV) for ZAEBUC English
+VPC_Types_ZEnglish <- ZAEBUCEnglishdf %>%
+  group_by(VPC_TYPE) %>%
+  filter(VPC_TYPE %in% c("PV", "PPV","PrepV")) %>%
+  summarize(FREQUENCY_VPCTYPES=n()) %>%
+  arrange(desc(FREQUENCY_VPCTYPES))
+VPC_Types_ZEnglish
+
+ZAEBUCEnglishdf %>%
+  group_by(VPC_TYPE) %>%
+  filter(VPC_TYPE %in% c("PV", "PPV","PrepV")) %>%
+  summarize(FREQUENCY=n_distinct(LEMMA_PREP)) %>%
+  arrange(desc(FREQUENCY))
+
+L1Arabicdf %>%
+  group_by(Type) %>%
+  summarize(FREQ=n())
+```
+```{r Unique Lemmas}
+
+# Number of Unique Lemmas - L1 Arabic
+length(unique(L1Arabicdf[["Lemma"]]))
+length(L1Arabicdf[["Lemma"]])
+
+# Number of Unique Lemmas - ZAEBUC Arabic
+length(unique(ZAEBUCArabicdf[["Lemma"]]))
+length(ZAEBUCArabicdf[["Lemma"]])
+
+# Number of Unique Lemmas - ZAEBUC English
+length(unique(ZAEBUCEnglishdf[["Lemma"]]))
+length(ZAEBUCEnglishdf[["Lemma"]])
+
+# Number of Unique Lemmas - ICLE NNS
+length(unique(ICLEL2English_df[["Lemma"]]))
+length(ICLEL2English_df[["Lemma"]])
+
+# Number of Unique Lemmas - LOCNESS NS
+length(unique(LOCL1English_df[["Lemma"]]))
+length(LOCL1English_df[["Lemma"]])
+
+```
+
+```{r}
+# Number of Unique Particles - L1 Arabic
+length(unique(L1Arabicdf[["Preposition"]]))
+unique(L1Arabicdf[["Preposition"]])
+
+# ZAEBUC Arabic
+length(unique(ZAEBUCArabicdf[["Preposition"]]))
+unique(ZAEBUCArabicdf[["Preposition"]])
+
+# Number of Unique Lemmas - ZAEBUC English
+length(unique(ZAEBUCEnglishdf[["Preposition"]]))
+unique(ZAEBUCEnglishdf[["Preposition"]])
+
+# Number of Unique Lemmas - ICLE NNS
+length(unique(ICLEL2English_df[["PART"]]))
+unique(ICLEL2English_df[["PART"]])
+
+# Number of Unique Lemmas - LOCNESS NS
+length(unique(LOCL1English_df[["PART"]]))
+unique(LOCL1English_df[["PART"]])
+
+```
+```{r}
+Lemmas_PrepV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PrepV") %>%
+  group_by(Lemma) %>%
+  summarize(n_lemmas = n())
+Lemmas_PrepV
+Preps_PrepV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PrepV") %>%
+  group_by(Preposition) %>%
+  summarize(n_preps = n())
+
+Lemmas_PV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PV") %>%
+  group_by(Lemma) %>%
+  summarize(n_lemmas = n())
+Lemmas_PV
+Preps_PV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PV") %>%
+  group_by(Preposition) %>%
+  summarize(n_preps = n(),
+            n_lemmas = n_distinct(Lemma)) %>%
+  arrange(desc(n_preps))
+Preps_PV
+Lemmas_PPV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PPV") %>%
+  group_by(Lemma) %>%
+  summarize(n_lemmas = n())
+
+Preps_PPV <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE =="PPV") %>%
+  group_by(Preposition) %>%
+  summarize(n_preps = n())
+Preps_PPV
+write.table(Preps_PV, file="ZES_PV_Preps.txt",quote=FALSE, sep="\t")
+
+Prep_PV_Overlap <- inner_join(Lemmas_PrepV, Lemmas_PV, by="Lemma")
+All3_Overlap <- inner_join(Prep_PV_Overlap, Lemmas_PPV, by="Lemma")
+
+
+All3_Overlap <- All3_Overlap %>%
+  rename(PrepV = n_lemmas.x, PV=n_lemmas.y, PPV=n_lemmas)
+All3_Overlap
+
+
+Preps_Overlap <- inner_join(Preps_PrepV, Preps_PV, by = "Preposition")
+Preps_overlap <- inner_join(Preps_Overlap, Preps_PPV, by="Preposition")
+Preps_Overlap
+#write.table(Preps_Overlap, file="Preps_Overlap.txt", quote=FALSE, sep=",")
+#write.table(All3_Overlap, file="ZETypes_Overlap.txt", quote=FALSE, sep=",")
+```
+```{r}
+library(data.table)
+long <- melt(setDT(All3_Overlap), id.vars = c("Lemma"), variable.name = "Type", value.name="Frequency")
+long
+
+
+ggplot(long, aes(fill=Type, y=Frequency, x=Lemma)) + 
+    geom_bar(position="dodge", stat="identity")
+
+Particle = c("with", "on","for","against","around")
+PrepV = c(276,102,66,1,1)
+PV = c(4,28,1,1,1)
+PPV = c(2,1,1,1,1)
+
+particle_overlap <- data.frame(Particle, PrepV, PV, PPV)
+particle_overlap
+
+long2 <- melt(setDT(particle_overlap), id.vars = c("Particle"), variable.name = "Type", value.name="Frequency")
+long2
+
+
+ggplot(long2, aes(fill=Type, y=Frequency, x=Particle)) + 
+    geom_bar(position="dodge", stat="identity")
+```
+
+```{r How many hits came from each file? L1 Arabic}
+L1Arabicdf %>%
+  group_by(File) %>%
+  summarise(n())
+
+```
+
+1)	A-E: Frequency lists of VPCs (in order of descending tokens frequency by type/lemma); report: top 30/50 in each corpus with overlap numbers
+a.	A: breakdown by register
+
+
+```{r Frequency Lists - Top 50 VPCs}
+
+# Top 50 VPCs in L1 Arabic
+
+Top50VPCs_L1Arabic <- L1Arabicdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_L1Arabic=n(),
+            n_freq_L1 = round(L1Ar_norm(n()), digits=2)) %>%
+  top_n(50,FREQUENCY_L1Arabic) %>%
+  arrange(desc(FREQUENCY_L1Arabic))
+Top50VPCs_L1Arabic
+
+write.table(Top50VPCs_L1Arabic, file = "Top50VPCs_L1Arabic_v2.txt", quote = FALSE, sep = "\t")
+
+# Top 50 VPCs in ZAEBUC Arabic
+
+Top50VPCs_ZArabic <- ZAEBUCArabicdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZArabic=n(),
+            n_freq_ZAr = ZAr_norm(n())) %>%
+  top_n(50,FREQUENCY_ZArabic) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Top50VPCs_ZArabic
+
+write.table(Top50VPCs_ZArabic, file = "Top50VPCs_ZArabic_.txt", quote = FALSE, sep = ",")
+
+# Top 50 VPCs in ZAEBUC English
+
+Top50VPCs_ZEnglish <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq_ZEng = round(ZEn_norm(n()), digits=2)) %>%
+  top_n(50,FREQUENCY_ZEng) %>%
+  arrange(desc(FREQUENCY_ZEng))
+Top50VPCs_ZEnglish
+
+write.table(Top50VPCs_ZEnglish, file = "Top50VPCs_ZEnglish_.txt", quote = FALSE, sep = "\t")
+
+# Top 50 VPCs in ICLE - NNS
+
+Top50VPCs_NNS <- ICLEL2English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_NNS=n(),
+            n_freq_ICLE = round(ICLE_norm(n()),digits=2)) %>%
+  top_n(50,FREQUENCY_NNS) %>%
+  arrange(desc(FREQUENCY_NNS))
+Top50VPCs_NNS
+
+write.table(Top50VPCs_NNS, file="ICLE_Top50VPCs.txt", quote=FALSE, sep=",")
+
+# Top 50 VPCs in LOCNESS - NS
+
+Top50VPCs_NS <- LOCL1English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_NS=n(),
+            n_freq_LOC = round(LOC_norm(n()), digits=2)) %>%
+  top_n(50,FREQUENCY_NS) %>%
+  arrange(desc(FREQUENCY_NS))
+Top50VPCs_NS
+
+# Top 50 PVs in ZAEBUC English
+
+Top50ZPVs <- ZAEBUCEnglish_PVs_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZPVs=n(),
+            n_freq_ZPVs = round(ZEn_norm(n()), digits=2)) %>%
+  top_n(50,FREQUENCY_ZPVs) %>%
+  arrange(desc(FREQUENCY_ZPVs))
+Top50ZPVs
+
+
+```
+
+```{r}
+# Top 10 in each ZEnglish Category
+
+Top10PrepVs <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  filter(VPC_TYPE == 'PrepV') %>%
+  summarize(FREQUENCY_PrepVs=n(),
+            n_freq_PrepVs = round(ZEn_norm(n()), digits = 2)) %>%
+  top_n(15,FREQUENCY_PrepVs) %>%
+  arrange(desc(FREQUENCY_PrepVs))
+Top10PrepVs
+
+Top10PVs <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  filter(VPC_TYPE == 'PV') %>%
+  summarize(FREQUENCY_PVs=n(),
+            n_freq_PVs = round(ZEn_norm(n()), digits=2)) %>%
+  top_n(15,FREQUENCY_PVs) %>%
+  arrange(desc(FREQUENCY_PVs))
+Top10PVs
+
+Top10PPVs <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  filter(VPC_TYPE == 'PPV') %>%
+  summarize(FREQUENCY_PPVs=n(),
+            n_freq_PPVs = round(ZEn_norm(n()), digits=2)) %>%
+  top_n(50,FREQUENCY_PPVs) %>%
+  arrange(desc(FREQUENCY_PPVs))
+Top10PPVs
+
+write.table(Top10PrepVs, file = "Top10PrepVs.txt", quote = FALSE, sep = "\t")
+write.table(Top10PVs, file = "Top10PVs.txt", quote = FALSE, sep = "\t")
+write.table(Top10PPVs, file = "Top10PPVs.txt", quote = FALSE, sep = "\t")
+
+```
+
+
+```{r Full Frequency Lists - VPCs}
+# VPCs in L1 Arabic
+
+VPCs_L1Arabic <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Revised_Meaning) %>%
+  filter(LEMMA_PREP != "كان على")%>%
+  summarize(FREQUENCY_L1Arabic=n(),
+            n_freq = round((L1Ar_norm(n())), digits=2)) %>%
+  arrange(desc(FREQUENCY_L1Arabic), LEMMA_PREP)
+VPCs_L1Arabic
+write.table(VPCs_L1Arabic, file="AllVPCs_L1Arabic.txt", quote=FALSE, sep=",")
+
+# VPCs in ZAEBUC Arabic
+
+VPCs_ZArabic <- ZAEBUCArabicdf %>%
+  group_by(LEMMA_PREP) %>%
+  filter(LEMMA_PREP != "كان على")%>%
+  summarize(FREQUENCY_ZArabic=n(),
+            n_freq = round((ZAr_norm(n())), digits=2)) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+VPCs_ZArabic
+write.table(VPCs_ZArabic, file="AllVPCs_ZArabic.txt", quote=FALSE, sep=",")
+
+# VPCs in ZAEBUC English
+
+VPCs_ZEnglish <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq = round((ZEn_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQUENCY_ZEng))
+VPCs_ZEnglish
+write.table(VPCs_ZEnglish, file="AllVPCs_ZEnglish.txt", quote=FALSE, sep=",")
+
+# Phrasal Verbs in ZAEBUC English
+
+ZEn_PVs <- ZAEBUCEnglish_PVs_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZPVs=n(),
+            n_freq_ZPVs = round((ZEn_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQUENCY_ZPVs))
+ZEn_PVs
+write.table(ZEn_PVs, file="AllPVs_ZEn.txt", quote=FALSE, sep=",")
+
+# VPCs in ICLE - NNS
+
+VPCs_NNS <- ICLEL2English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_NNS=n(),
+            n_freq = round((ICLE_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQUENCY_NNS))
+VPCs_NNS
+write.table(VPCs_NNS, file="AllVPCs_NNS.txt", quote=FALSE, sep=",")
+
+# VPCs in LOCNESS - NS
+
+VPCs_NS <- LOCL1English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_NS=n(),
+            n_freq = round((LOC_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQUENCY_NS))
+VPCs_NS
+write.table(VPCs_NS, file="AllVPCs_LOCNESS.txt", quote=FALSE, sep=",")
+
+```
+```{r}
+ZAEBUCEnglishdf %>%
+  group_by(Lemma) %>%
+  filter(VPC_TYPE == "PV") %>%
+  summarize(FREQ=n())%>%
+  arrange(desc(FREQ))
+
+ZAEBUCEnglishdf %>%
+  group_by(Lemma,Preposition) %>%
+  filter(VPC_TYPE == "PV") %>%
+  summarize(FREQ=n())%>%
+  arrange(Lemma,desc(FREQ))
+```
+
+
+```{r}
+Ones_L1Arabic <- VPCs_L1Arabic %>%
+  filter(FREQUENCY_L1Arabic == 1)
+
+barplot(height=VPCs_L1Arabic$FREQUENCY_L1Arabic, names=VPCs_L1Arabic$LEMMA_PREP)
+
+
+Lemma_Prep_Countsdf <- L1Arabicdf %>% 
+  group_by(Lemma, Preposition) %>% 
+  summarize(count=n()) %>%
+  arrange(Lemma)
+
+subset(Lemma_Prep_Countsdf, duplicated(Lemma))
+
+Ones_ZArabic <- VPCs_ZArabic %>%
+  filter(FREQUENCY_ZArabic == 1)
+Ones_ZArabic
+inner_join(Ones_L1Arabic, Ones_ZArabic, by="LEMMA_PREP")
+
+Lemma_Prep_Counts_ZE <- ZAEBUCEnglishdf %>% 
+  group_by(Lemma, Preposition) %>% 
+  summarize(count=n()) %>%
+  arrange(Lemma)
+Lemma_Prep_Counts_ZE
+
+subset(Lemma_Prep_Counts_ZE, duplicated(Lemma))
+```
+
+
+```{r Frequency Lists - Top 50 Lemmas}
+
+# Top 50 Lemmas in L1 Arabic
+
+Top50Lems_L1Arabic <- L1Arabicdf %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_L1Arabic=n(),
+            n_freq_L1 = L1Ar_norm(n())) %>%
+  top_n(50,FREQUENCY_L1Arabic) %>%
+  arrange(desc(FREQUENCY_L1Arabic))
+Top50Lems_L1Arabic
+
+# Top 50 Lemmas in ZAEBUC Arabic
+
+Top50Lems_ZArabic <- ZAEBUCArabicdf %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_ZArabic=n(),
+            n_freq_ZAr = ZAr_norm(n())) %>%
+  top_n(50,FREQUENCY_ZArabic) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Top50Lems_ZArabic
+
+# Top 50 Lemmas in ZAEBUC English
+
+Top50Lems_ZEnglish <- ZAEBUCEnglishdf %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq_ZEn = round(ZEn_norm(n()), digits=2)) %>%
+  top_n(30,FREQUENCY_ZEng) %>%
+  arrange(desc(FREQUENCY_ZEng))
+Top50Lems_ZEnglish
+write.table(Top50Lems_ZEnglish, file="TopLems_ZEnglish.txt", quote=FALSE, sep=",")
+
+# Top 50 PV Lemmas in ZAEBUC English
+
+Top50PVLems_ZEnglish <- ZAEBUCEnglish_PVs_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq_ZPVs = round(ZEn_norm(n()), digits=2),
+            n_preps = n_distinct(Preposition)) %>%
+  top_n(50,FREQUENCY_ZEng) %>%
+  arrange(desc(FREQUENCY_ZEng))
+Top50PVLems_ZEnglish
+
+write.table(Top50PVLems_ZEnglish, file="ZES_TopPVLemmas.txt", quote=FALSE, sep="\t")
+
+# Top 50 Lemmas in ICLE - NNS
+
+Top50Lems_NNS <- ICLEL2English_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_NNS=n(),
+            n_freq_ICLE = round(ICLE_norm(n()), digits=2),
+            n_preps = n_distinct(PART)) %>%
+  top_n(50,FREQUENCY_NNS) %>%
+  arrange(desc(FREQUENCY_NNS))
+Top50Lems_NNS
+
+write.table(Top50Lems_NNS, file="ICLE_TopLemmas.txt", quote=FALSE, sep=",")
+
+# Top 50 Lemmas in LOCNESS - NS
+
+Top50Lems_NS <- LOCL1English_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_NS=n(),
+            n_freq_LOC = round(LOC_norm(n()), digits=2),
+            n_preps = n_distinct(PART)) %>%
+  top_n(50,FREQUENCY_NS) %>%
+  arrange(desc(FREQUENCY_NS))
+Top50Lems_NS
+
+write.table(Top50Lems_NS, file="Top50Lems_NS.txt", quote=FALSE, sep=",")
+```
+
+
+```{r Full Frequency List - Particles}
+
+ZEnglish_Particles <- ZAEBUCEnglishdf %>%
+  group_by(Preposition) %>%
+  summarize(Prep_Freq = n()) %>%
+  arrange(desc(Prep_Freq))
+ZEnglish_Particles
+
+#write.table(ZEnglish_Particles, file="ZEng_Particles.txt", quote=FALSE, sep=",")
+
+ZEnglish_VbyParticles <- ZAEBUCEnglishdf %>%
+  group_by(Preposition) %>%
+  summarize(Lemma_Freq = n_distinct(Lemma)) %>%
+  arrange(desc(Lemma_Freq))
+ZEnglish_VbyParticles
+
+ICLE_particles <- ICLEL2English_df %>%
+  group_by(PART) %>%
+  summarize(Part_freq = n(),
+            lemmas = n_distinct(Lemma)) %>%
+  arrange(desc(Part_freq))
+ICLE_particles
+write.table(ICLE_particles, file="ICLE_particles.txt", quote=FALSE, sep=",")
+
+LOC_particles <- LOCL1English_df %>%
+  group_by(PART) %>%
+  summarize(Part_freq = n(),
+            lemmas = n_distinct(Lemma)) %>%
+  arrange(desc(Part_freq))
+LOC_particles
+write.table(LOC_particles, file="LOC_particles.txt", quote=FALSE, sep=",")
+```
+
+
+```{r Full Frequency Lists - Lemmas}
+# Lemmas in L1 Arabic
+
+Lems_L1Arabic <- L1Arabicdf %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_L1Arabic=n(),
+            n_freq = L1Ar_norm(n())) %>%
+  arrange(desc(FREQUENCY_L1Arabic))
+Lems_L1Arabic
+
+# Lemmas in ZAEBUC Arabic
+
+Lems_ZArabic <- ZAEBUCArabicdf %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_ZArabic=n(),
+            n_freq = ZAr_norm(n())) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Lems_ZArabic
+
+# Lemmas in ZAEBUC English
+
+Lems_ZEnglish <- ZAEBUCEnglishdf %>%
+  group_by(Lemma, VPC_TYPE) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq = ZEn_norm(n())) %>%
+  arrange(desc(FREQUENCY_ZEng))
+Lems_ZEnglish
+
+# Lemmas in ICLE - NNS
+
+Lems_NNS <- ICLEL2English_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_NNS=n(),
+            n_freq = round(ICLE_norm(n()), digits=2)) %>%
+  arrange(desc(FREQUENCY_NNS))
+Lems_NNS
+
+# Lemmas in LOCNESS - NS
+
+Lems_NS <- LOCL1English_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_NS=n(),
+            n_freq = LOC_norm(n())) %>%
+  arrange(desc(FREQUENCY_NS))
+Lems_NS
+
+```
+
+
+```{r Overlap Frequencies - VPCs}
+
+## L1 Arabic & ZAEBUC Arabic
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+L1_ZAEBUC_Overlap_matches <- inner_join(Top50VPCs_L1Arabic, Top50VPCs_ZArabic, suffix = c("_L1", "_Z"), by = "LEMMA_PREP")
+L1_ZAEBUC_Overlap_matches
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+L1_ZAEBUC_Overlap_Full <- full_join(Top50VPCs_L1Arabic, Top50VPCs_ZArabic, suffix = c("_L1", "_Z"), by = "LEMMA_PREP")
+L1_ZAEBUC_Overlap_Full
+
+## ZAEBUC English (PVs) & ICLE (NNS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ZEng_ICLE_Overlap_matches <- inner_join(ZEn_PVs, VPCs_NNS, suffix = c("_Z", "_ICLE"), by = "LEMMA_PREP")
+ZEng_ICLE_Overlap_matches
+
+
+write.table(ZEng_ICLE_Overlap_matches, file="ZEng_ICLE_PVOverlap.txt", quote=FALSE, sep=",")
+
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ZEng_ICLE_Overlap_Full <- full_join(ZEn_PVs, VPCs_NNS, suffix = c("_Z", "_ICLE"), by = "LEMMA_PREP")
+ZEng_ICLE_Overlap_Full
+
+## ZAEBUC English (PVs) & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ZEng_LOC_Overlap_matches <- inner_join(ZEn_PVs, VPCs_NS, suffix = c("_Z", "_LOC"), by = "LEMMA_PREP")
+ZEng_LOC_Overlap_matches
+
+write.table(ZEng_LOC_Overlap_matches, file="ZPVs_LOC_Overlap.txt", quote=FALSE, sep=",")
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ZEng_LOC_Overlap_Full <- full_join(ZEn_PVs, VPCs_NS, suffix = c("_Z", "_LOC"), by = "LEMMA_PREP")
+ZEng_LOC_Overlap_Full
+
+## ICLE (NNS) & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ICLE_LOC_Overlap_matches <- inner_join(VPCs_NNS, VPCs_NS, suffix = c("_ICLE", "_LOC"), by = "LEMMA_PREP")
+ICLE_LOC_Overlap_matches
+
+write.table(ICLE_LOC_Overlap_matches, file="ICLE_LOC_Overlap.txt", quote=FALSE, sep=",")
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ICLE_LOC_Overlap_Full <- full_join(VPCs_NNS, VPCs_NS, suffix = c("_ICLE", "_LOC"), by = "LEMMA_PREP")
+ICLE_LOC_Overlap_Full
+
+## ZAEBUC English (PVs), ICLE (NNS), & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the three
+All_Eng_Overlap_matches <- inner_join(ZEng_LOC_Overlap_matches, VPCs_NNS, by = "LEMMA_PREP")
+All_Eng_Overlap_matches
+
+write.table(All_Eng_Overlap_matches, file="All_Eng_Overlap.txt", quote=FALSE, sep=",")
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+All_Eng_Overlap_Full <- full_join(ZEng_ICLE_Overlap_Full, Top50VPCs_NS, by = "LEMMA_PREP")
+All_Eng_Overlap_Full
+
+# Could do full list overlaps? Necessary?
+
+```
+
+```{r Overlap Frequencies - Full VPC Lists}
+# L1 Arabic & ZAEBUC Arabic (All Arabic Natives)
+L1_ZAEBUC_Overlap_Full_AllVPCs <- full_join(VPCs_L1Arabic, VPCs_ZArabic, suffix = c("_L1", "_Z"), by = "LEMMA_PREP")
+L1_ZAEBUC_Overlap_Full_AllVPCs
+
+L1_ZAEBUC_Overlap <- inner_join(VPCs_L1Arabic, VPCs_ZArabic, suffix = c("_L1", "_Z"), by = "LEMMA_PREP")
+L1_ZAEBUC_Overlap
+
+# ZAEBUC English & LOCNESS (Learners (L1 Arabic) vs. Natives)
+ZEn_LOC_Overlap_Full_AllVPCs <- full_join(ZEn_PVs, VPCs_NS, suffix = c("_ZEn", "_LOC"), by = "LEMMA_PREP")
+ZEn_LOC_Overlap_Full_AllVPCs
+
+
+# ZAEBUC English & ICLE (All English Learners)
+ZEn_ICLE_Overlap_Full_AllVPCs <- full_join(ZEn_PVs, VPCs_NNS, suffix = c("_ZEn", "_ICLE"), by = "LEMMA_PREP")
+ZEn_ICLE_Overlap_Full_AllVPCs
+```
+```{r}
+ZPVs_ICLE_DCA_Input <- ZEn_ICLE_Overlap_Full_AllVPCs %>%
+  filter(n_freq_ZPVs >= 1|n_freq >=1) %>%
+  select(LEMMA_PREP,n_freq_ZPVs,n_freq)
+ZPVs_ICLE_DCA_Input
+  
+ZPVs_ICLE_DCA_Input[is.na(ZPVs_ICLE_DCA_Input)] <- 0
+ZPVs_ICLE_DCA_Input
+
+write_xlsx(ZPVs_ICLE_DCA_Input, "ZPVs_ICLE_DCA_Input.xlsx")
+
+ZEng_LOC_Overlap_Full
+ZPVs_LOC_DCA_Input <- ZEng_LOC_Overlap_Full %>%
+  filter(n_freq_ZPVs >= 1|n_freq >=1) %>%
+  select(LEMMA_PREP,n_freq_ZPVs,n_freq)
+ZPVs_LOC_DCA_Input
+  
+ZPVs_LOC_DCA_Input[is.na(ZPVs_LOC_DCA_Input)] <- 0
+ZPVs_LOC_DCA_Input
+
+write_xlsx(ZPVs_LOC_DCA_Input, "ZPVs_LOC_DCA_Input.xlsx")
+
+ICLE_LOC_Overlap_Full
+ICLE_LOC_DCA_Input <- ICLE_LOC_Overlap_Full %>%
+  filter(n_freq_ICLE >= 1|n_freq_LOC >=1) %>%
+  select(LEMMA_PREP,n_freq_ICLE,n_freq_LOC)
+ICLE_LOC_DCA_Input
+  
+ICLE_LOC_DCA_Input[is.na(ICLE_LOC_DCA_Input)] <- 0
+ICLE_LOC_DCA_Input
+
+write_xlsx(ICLE_LOC_DCA_Input, "ICLE_LOC_DCA_Input.xlsx")
+
+```
+
+```{r}
+# round normalized frequencies
+# delete any that are not in both
+colnames(L1_ZAEBUC_Overlap_Full_AllVPCs)
+L1_ZAr_DCA_Input <- L1_ZAEBUC_Overlap_Full_AllVPCs %>%
+  filter(n_freq_L1 >= 1|n_freq_Z >=1) %>%
+  select(LEMMA_PREP,n_freq_L1,n_freq_Z)
+L1_ZAr_DCA_Input
+
+write_xlsx(L1_ZAr_DCA_Input, "L1_ZAr_DCAInput2.xlsx")
+
+```
+
+```{r Overlap Frequencies - Full VPC Lists}
+## NOTE: Because DCA requires rounding, ICLE & LOCNESS were normalized by base 250,000 instead of the standard 10,000 for the other corpora to avoid misleading 0 and 1 rounding
+# ICLE & LOCNESS (Learners (L1 Varied) vs. Natives)
+ICLE_LOC_Overlap_Full_AllVPCs <- full_join(VPCs_NNS, VPCs_NS, suffix = c("_ICLE", "_LOC"), by = "LEMMA_PREP")
+ICLE_LOC_Overlap_Full_AllVPCs
+
+#write_xlsx(ICLE_LOC_Overlap_Full_AllVPCs, "ICLE_LOC_DCAInput.xlsx")
+#write_xlsx(L1_ZAEBUC_Overlap_Full_AllVPCs, "L1_ZAr_DCAInput2.xlsx")
+#write_xlsx(ZEn_LOC_Overlap_Full_AllVPCs, "ZEn_LOC_DCAInput.xlsx")
+#write_xlsx(ZEn_ICLE_Overlap_Full_AllVPCs, "ZEn_ICLE_DCAInput.xlsx")
+
+# L1 Arabic & LOCNESS (Natives Arabic & English Only)
+#L1Ar_LOC_Overlap_Full_AllVPCs <- full_join(VPCs_L1Arabic, VPCs_NNS, suffix = c("_L1", "_ICLE"), by = "LEMMA_PREP")
+#L1Ar_LOC_Overlap_Full_AllVPCs
+
+
+```
+
+```{r Overlap Frequencies - Lemmas}
+## L1 Arabic & ZAEBUC Arabic
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+L1_ZAEBUC_Overlap_matches_Lems <- inner_join(Top50Lems_L1Arabic, Top50Lems_ZArabic, suffix = c("_L1", "_Z"), by = "Lemma")
+L1_ZAEBUC_Overlap_matches_Lems
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+L1_ZAEBUC_Overlap_Full_Lems <- full_join(Top50Lems_L1Arabic, Top50Lems_ZArabic, suffix = c("_L1", "_Z"), by = "Lemma")
+L1_ZAEBUC_Overlap_Full_Lems
+
+## ZAEBUC English (PVs) & ICLE (NNS)
+
+ZPVs_Lemmas <- ZAEBUCEnglish_PVs_df %>%
+  group_by(Lemma) %>%
+  summarize(FREQUENCY_ZEng=n(),
+            n_freq_ZPVs = round(ZEn_norm(n()), digits=2)) %>%
+  arrange(desc(FREQUENCY_ZEng))
+ZPVs_Lemmas
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ZEng_ICLE_Overlap_matches_Lems <- inner_join(ZPVs_Lemmas, Lems_NNS, suffix = c("_Z", "_ICLE"), by = "Lemma")
+ZEng_ICLE_Overlap_matches_Lems
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ZEng_ICLE_Overlap_Full_Lems <- full_join(Top50PVLems_ZEnglish, Top50Lems_NNS, suffix = c("_Z", "_ICLE"), by = "Lemma")
+ZEng_ICLE_Overlap_Full_Lems
+
+## ZAEBUC English (PVs) & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ZEng_LOC_Overlap_matches_Lems <- inner_join(Top50PVLems_ZEnglish, Top50Lems_NS, suffix = c("_Z", "_LOC"), by = "Lemma")
+ZEng_LOC_Overlap_matches_Lems
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ZEng_LOC_Overlap_Full_Lems <- full_join(Top50PVLems_ZEnglish, Top50Lems_NS, suffix = c("_Z", "_LOC"), by = "Lemma")
+ZEng_LOC_Overlap_Full_Lems
+
+## ICLE (NNS) & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the two
+ICLE_LOC_Overlap_matches_Lems <- inner_join(Top50Lems_NNS, Top50Lems_NS, suffix = c("_ICLE", "_LOC"), by = "Lemma")
+ICLE_LOC_Overlap_matches_Lems
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+ICLE_LOC_Overlap_Full_Lems <- full_join(Top50Lems_NNS, Top50Lems_NS, suffix = c("_ICLE", "_LOC"), by = "Lemma")
+ICLE_LOC_Overlap_Full_Lems
+
+## ZAEBUC English (PVs), ICLE (NNS), & LOCNESS (NS)
+
+# Overlap of Top 50s dataframes
+# Overlap of only matches between the three
+All_Eng_Overlap_matches_Lems <- inner_join(ZEng_ICLE_Overlap_matches_Lems, Top50Lems_NS, by = "Lemma")
+All_Eng_Overlap_matches_Lems
+
+write.table(All_Eng_Overlap_matches_Lems, file="All_Eng_Lemma_Overlap.txt", quote=FALSE, sep=",")
+
+# Overlap of all top 50, whether they appear in both or only one of the corpora
+All_Eng_Overlap_Full_Lems <- full_join(ZEng_ICLE_Overlap_matches_Lems, Top50Lems_NS, by = "Lemma")
+All_Eng_Overlap_Full_Lems
+```
+
+
+
+```{r L1 Arabic: Breakdown of VPC Frequency by Genre}
+# Creating new df's by Genre w/ frequencies
+
+Medicine_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'Medicine') %>%
+  summarize(FREQ_MED=n(),
+            nf_med = round((Med_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_MED))
+
+Military_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'Military') %>%
+  summarize(FREQ_MILT=n(),
+            nf_milt = round((Milt_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_MILT))
+
+Law_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'Law') %>%
+  summarize(FREQ_LAW=n(),
+            nf_law = round((Law_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_LAW))
+
+Encyclopedia_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'Encyclopedia') %>%
+  summarize(FREQ_ENCY=n(),
+            nf_ency = round((Ency_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_ENCY))
+
+IT_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'IT') %>%
+  summarize(FREQ_IT=n(),
+            nf_IT = round((IT_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_IT))
+
+News_VPCs <- L1Arabicdf %>% 
+  group_by(LEMMA_PREP) %>%
+  filter(Genre == 'News') %>%
+  summarize(FREQ_NEWS=n(),
+            nf_news = round((News_norm(n())), digits = 2)) %>%
+  arrange(desc(FREQ_NEWS))
+
+Medicine_VPCs
+Military_VPCs
+Law_VPCs
+Encyclopedia_VPCs
+IT_VPCs
+News_VPCs
+```
+
+```{r}
+Medicine_10 <- head(Medicine_VPCs, 10)
+Military_10 <- head(Military_VPCs, 10)
+Law_10 <- head(Law_VPCs, 10)
+Encyclopedia_10 <- head(Encyclopedia_VPCs, 10)
+IT_10 <- head(IT_VPCs, 10)
+News_10 <- head(News_VPCs, 10)
+
+
+# write.table(Medicine_10, file = "Medicine_VPCs.txt", quote = FALSE, sep = "\t")
+# write.table(Military_10, file = "Military_VPCs.txt", quote = FALSE, sep = "\t")
+# write.table(Law_10, file = "Law_VPCs.txt", quote = FALSE, sep = "\t")
+# write.table(Encyclopedia_10, file = "Encyclopedia_VPCs.txt", quote = FALSE, sep = "\t")
+# write.table(IT_10, file = "IT_VPCs.txt", quote = FALSE, sep = "\t")
+# write.table(News_10, file = "News_VPCs.txt", quote = FALSE, sep = "\t")
+```
+
+```{r}
+#how many VPC types and tokens in each genre?
+
+Med_VPC_Total <- sum(Medicine_VPCs["FREQ_MED"])
+Med_VPC_Total
+
+Milt_VPC_Total <- sum(Military_VPCs["FREQ_MILT"])
+Milt_VPC_Total
+
+Law_VPC_Total <- sum(Law_VPCs["FREQ_LAW"])
+Law_VPC_Total
+
+Ency_VPC_Total <- sum(Encyclopedia_VPCs["FREQ_ENCY"])
+Ency_VPC_Total
+
+IT_VPC_Total <- sum(IT_VPCs["FREQ_IT"])
+IT_VPC_Total
+
+News_VPC_Total <- sum(News_VPCs["FREQ_NEWS"])
+News_VPC_Total
+
+```
+
+
+```{r Genre Overlaps - VPCs}
+
+# Doing full list overlaps instead of Top 50 as above since dataset is smaller.
+# Only doing full join so that items are not eliminated before combining final df
+# Need to do several combinations pair-wise
+
+# Medicine & Military
+Med_Milt_Overlap <- full_join(Medicine_VPCs, Military_VPCs, by = "LEMMA_PREP")
+
+# Law & Encyclopedia
+Law_Ency_Overlap <- full_join(Law_VPCs, Encyclopedia_VPCs, by = "LEMMA_PREP")
+
+# IT & News
+IT_News_Overlap <- full_join(IT_VPCs, News_VPCs, by = "LEMMA_PREP")
+
+# MM + LE
+MM_LE_Overlap <- full_join(Med_Milt_Overlap, Law_Ency_Overlap, by = "LEMMA_PREP")
+
+# MMLE + ITN - Final Genre Overlap df
+All_Genre_Overlap_Full <- full_join(MM_LE_Overlap, IT_News_Overlap, by = "LEMMA_PREP")
+All_Genre_Overlap_Full
+```
+```{r L1 Arabic}
+Top_5_Overlap <- All_Genre_Overlap_Full %>%
+  filter(LEMMA_PREP %in% c("قام ب" ,"أدى إلى" ,"حصل على" ,"وصل إلى" ,"عمل على"))
+Top_5_Overlap
+
+Overlap_AllGenres <- All_Genre_Overlap_Full %>% drop_na()
+Overlap_AllGenres
+
+# What are the VPCs that are unique to each genre?
+# Encyclopedia
+encyclopedia_only <- anti_join(Encyclopedia_VPCs, IT_News_Overlap, by="LEMMA_PREP")
+encyclopedia_only2 <- anti_join(encyclopedia_only, Med_Milt_Overlap, by="LEMMA_PREP")
+encyclopedia_only_f <- anti_join(encyclopedia_only2, Law_VPCs, by="LEMMA_PREP")
+encyclopedia_only_f
+
+# IT
+IT_only <- anti_join(IT_VPCs, MM_LE_Overlap, by="LEMMA_PREP")
+IT_only2 <- anti_join(IT_only, News_VPCs, by="LEMMA_PREP")
+IT_only2
+
+# Law
+Law_only <- anti_join(Law_VPCs, Med_Milt_Overlap, by="LEMMA_PREP")
+Law_only2 <- anti_join(Law_only, IT_News_Overlap, by="LEMMA_PREP")
+Law_onlyf <- anti_join(Law_only2, Encyclopedia_VPCs, by="LEMMA_PREP")
+Law_onlyf
+
+# Medicine
+Med_only <- anti_join(Medicine_VPCs, IT_News_Overlap, by="LEMMA_PREP")
+Med_only2 <- anti_join(Med_only, Law_Ency_Overlap, by="LEMMA_PREP")
+Med_onlyf <- anti_join(Med_only2, Military_VPCs, by="LEMMA_PREP")
+Med_onlyf
+
+# Military
+Milt_only <- anti_join(Military_VPCs, IT_News_Overlap, by="LEMMA_PREP")
+Milt_only2 <- anti_join(Milt_only, Law_Ency_Overlap, by="LEMMA_PREP")
+Milt_onlyf <- anti_join(Milt_only2, Medicine_VPCs, by="LEMMA_PREP")
+Milt_onlyf
+
+# News
+News_only <- anti_join(News_VPCs, MM_LE_Overlap, by="LEMMA_PREP")
+News_only2 <- anti_join(News_only, IT_VPCs, by="LEMMA_PREP")
+News_only2
+
+write.table(Top_5_Overlap, file = "Top5_GenreOverlap.txt", quote = FALSE, sep = ",")
+write.table(Overlap_AllGenres, file = "All_GenreOverlap.txt", quote = FALSE, sep = ",")
+
+```
+
+
+```{r L1 Arabic: Breakdown of Lemma Frequency by Genre}
+Medicine_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'Medicine') %>%
+  summarize(FREQ_MED=n(),
+            nf_med = Med_norm(n())) %>%
+  arrange(desc(FREQ_MED))
+
+Military_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'Military') %>%
+  summarize(FREQ_MILT=n(),
+            nf_milt = Milt_norm(n())) %>%
+  arrange(desc(FREQ_MILT))
+
+Law_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'Law') %>%
+  summarize(FREQ_LAW=n(),
+            nf_law = Law_norm(n())) %>%
+  arrange(desc(FREQ_LAW))
+
+Encyclopedia_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'Encyclopedia') %>%
+  summarize(FREQ_ENCY=n(),
+            nf_ency = Ency_norm(n())) %>%
+  arrange(desc(FREQ_ENCY))
+
+IT_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'IT') %>%
+  summarize(FREQ_IT=n(),
+            nf_IT = IT_norm(n())) %>%
+  arrange(desc(FREQ_IT))
+
+News_Lems <- L1Arabicdf %>% 
+  group_by(Lemma) %>%
+  filter(Genre == 'News') %>%
+  summarize(FREQ_NEWS=n(),
+            nf_news = News_norm(n())) %>%
+  arrange(desc(FREQ_NEWS))
+
+Medicine_Lems
+Military_Lems
+Law_Lems
+Encyclopedia_Lems
+IT_Lems
+News_Lems
+```
+```{r Genre Overlaps - Lemmas}
+
+# Doing full list overlaps instead of Top 50 as above since dataset is smaller.
+# Only doing full join so that items are not eliminated before combining final df
+# Need to do several combinations pair-wise
+
+# Medicine & Military
+Med_Milt_Overlap_Lems <- full_join(Medicine_Lems, Military_Lems, by = "Lemma")
+
+# Law & Encyclopedia
+Law_Ency_Overlap_Lems <- full_join(Law_Lems, Encyclopedia_Lems, by = "Lemma")
+
+# IT & News
+IT_News_Overlap_Lems <- full_join(IT_Lems, News_Lems, by = "Lemma")
+
+# MM + LE
+MM_LE_Overlap_Lems <- full_join(Med_Milt_Overlap_Lems, Law_Ency_Overlap_Lems, by = "Lemma")
+
+# MMLE + ITN - Final Genre Overlap df
+All_Genre_Overlap_Full_Lems <- full_join(MM_LE_Overlap_Lems, IT_News_Overlap_Lems, by = "Lemma")
+All_Genre_Overlap_Full_Lems
+```
+2)	B+C: breakdown of VPCs by learner
+a.	Break down further by VPO/VOP
+b.	Break down further verb types (in Arabic)
+
+
+```{r}
+# Breakdown of VPCs by Learner
+# ZAEBUC Arabic
+# Organized by learner, gives you list of VPCs and their frequency from each learner
+ZArabic_Learners <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQ=n(),
+            n_FREQ_ZAr = ZAr_norm(n())) %>%
+  arrange(desc(FREQ))
+ZArabic_Learners
+
+# Number of VPC types used by each learner (only shows total #, not specific VPCs)
+ZArabic_Learners_N <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM) %>%
+  summarize(Ar_VPC_types=n_distinct(LEMMA_PREP),
+            Ar_tokens = n(),
+            Ar_ty_n = round(ZAr_norm(Ar_VPC_types), digits=2),
+            Ar_to_n = round(ZAr_norm(Ar_tokens), digits=2)) %>%
+  arrange(desc(Ar_tokens))
+ZArabic_Learners_N
+
+ZArabic_Learners_2 <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  filter(LEMMA_PREP %in% c("اعتمد على" ,"أدى إلى" ,"تحدث عن" ,"ساعد على")) %>%
+  summarize(freq_Ar = n()) %>%
+  arrange(FILE_NUM, desc(freq_Ar))
+ZArabic_Learners_2
+
+ZEng_Learners_2 <- ZAEBUCEnglishdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  filter(LEMMA_PREP %in% c("lead to","depend on","talk about","help in","help with")) %>%
+  summarize(Freq_En = n()) %>%
+  arrange(FILE_NUM, desc(Freq_En))
+ZEng_Learners_2
+
+overlap_top5_bothlangs <- inner_join(ZArabic_Learners_2, ZEng_Learners_2, by="FILE_NUM")
+overlap_top5_bothlangs
+
+# VPO vs. VOP
+ZArabic_Learners_Order <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM, Order) %>%
+  summarize(FREQ=n()) %>%
+  arrange(FILE_NUM)
+ZArabic_Learners_Order
+
+ZArabic_Learners_Order_VPC <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP, Order) %>%
+  summarize(FREQ=n()) %>%
+  arrange(FILE_NUM)
+ZArabic_Learners_Order_VPC
+
+# Verb types
+ZArabic_Learners_VT <- ZAEBUCArabicdf %>% 
+  group_by(FILE_NUM, Type) %>%
+  summarize(FREQ=n()) %>%
+  arrange(FILE_NUM)
+ZArabic_Learners_VT
+
+
+
+# ZAEBUC English
+ZEng_Learners <- ZAEBUCEnglishdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQ=n(),
+            n_FREQ=ZEn_norm(n())) %>%
+  arrange(LEMMA_PREP)
+ZEng_Learners
+
+# Number of VPC types used by each learner
+
+ZEng_Learners_N <- ZAEBUCEnglishdf %>% 
+  group_by(FILE_NUM) %>%
+  summarize(En_VPC_types=n_distinct(LEMMA_PREP),
+            En_tokens = n(),
+            En_ty_n = round(ZEn_norm(En_VPC_types), digits=2),
+            En_to_n = round(ZEn_norm(En_tokens), digits=2)) %>%
+  arrange(desc(En_tokens))
+ZEng_Learners_N
+
+# VPO vs. VOP
+ZEng_Learners_Order <- ZAEBUCEnglishdf %>% 
+  group_by(FILE_NUM, Order) %>%
+  summarize(FREQ=n()) %>%
+  arrange(FILE_NUM)
+ZEng_Learners_Order
+
+ZEng_Learners_Order_VPC <- ZAEBUCEnglishdf %>% 
+  group_by(FILE_NUM, LEMMA_PREP, Order) %>%
+  summarize(FREQ=n()) %>%
+  arrange(FILE_NUM)
+ZEng_Learners_Order_VPC
+
+# Comparison of # of VPCs used across languages
+Learner_Overlap_VPCs <- inner_join(ZEng_Learners_N, ZArabic_Learners_N, by = "FILE_NUM")
+Learner_Overlap_VPCs
+
+Learners_Full <- full_join(ZEng_Learners_N, ZArabic_Learners_N, by = "FILE_NUM")
+Learners_Full
+
+ZAEBUCArabicdf %>%
+  group_by(FILE_NUM) %>%
+  summarize(n = n())
+
+```
+
+
+```{r L1 VPCs by Individual Learner}
+Learner_Overlap_VPCs %>%
+  arrange(desc(En_to_n))
+
+Learner_Overlap_VPCs %>%
+  arrange(desc(Ar_to_n))
+
+Learner_Overlap_VPCs %>%
+  mutate(Difference = abs(En_to_n - Ar_to_n)) %>%
+  filter(Difference >=3) %>%
+  arrange(desc(Difference))
+
+mean(Learner_Overlap_VPCs$En_to_n)
+mean(Learner_Overlap_VPCs$En_ty_n)
+mean(Learner_Overlap_VPCs$Ar_to_n)
+mean(Learner_Overlap_VPCs$Ar_ty_n)
+
+Learners_Full[is.na(Learners_Full)] <- 0
+mean(Learners_Full$En_to_n)
+mean(Learners_Full$En_ty_n)
+mean(Learners_Full$Ar_to_n)
+mean(Learners_Full$Ar_ty_n)
+```
+
+```{r}
+OB <- c(rep('Overall', 4))
+Language <- c('Arabic', 'Arabic', 'English', 'English')
+Categ <- c('Types','Tokens','Types','Tokens')
+Average <- c( 1.48, 1.78,1.44, 1.65)
+
+Overall <- data.frame(OB, Language, Categ, Average)
+Overall
+
+OB <- c(rep('Both',4))
+Language <- c('Arabic', 'Arabic', 'English', 'English')
+Categ <- c('Types','Tokens','Types','Tokens')
+Average <- c(3.42,4.07,1.53,1.73)
+
+Both <- data.frame(OB,Language, Categ, Average)
+Both
+
+All_together <- rbind(Overall, Both)
+All_together
+
+ggplot(All_together, aes(fill=Categ, y=Average, x=Language)) + 
+    geom_bar(position="dodge", stat="identity") +
+    facet_wrap(~OB) +
+    xlab("") + scale_fill_discrete(name = "")
+ggsave(filename= "Lang_tys_tokens.png", device='png', dpi=700)
+
+```
+3)	B+C(+D): take the X most frequent VPCs in A and E, respectively, and plot frequency by individual learner in B and C: “drill down to the individual learner”
+
+```{r L1 VPCs by Individual Learner}
+# A R A B I C
+# Top 5 VPCs in A (L1 Arabic)
+Top5VPCs_L1Arabic <- L1Arabicdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_L1Arabic=n()) %>%
+  top_n(5,FREQUENCY_L1Arabic) %>%
+  arrange(desc(FREQUENCY_L1Arabic))
+Top5VPCs_L1Arabic
+
+# Top 5 VPCs from L1 Arabic w/ their frequency in ZAEBUC by learner
+Top5L1_AllLearners <- ZAEBUCArabicdf %>%
+  group_by(FILE_NUM,LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZArabic=n()) %>%
+  filter(LEMMA_PREP %in% c("قام ب" ,"أدى إلى" ,"حصل على" ,"وصل إلى" ,"عمل على")) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Top5L1_AllLearners
+
+# Grouped bar graph of Top 5 Arabic VPCs for learners
+ggplot(Top5L1_AllLearners, aes(fill=LEMMA_PREP, y=FREQUENCY_ZArabic, x=FILE_NUM)) + 
+    geom_bar(position="dodge", stat="identity")
+
+# Multiples graphs of Top 5 Arabic VPCs for learners- not a great representation
+ggplot(Top5L1_AllLearners, aes(fill=LEMMA_PREP, y=FREQUENCY_ZArabic, x=LEMMA_PREP)) + 
+    geom_bar(position="dodge", stat="identity") +
+    ggtitle("Top 5 L1 Arabic VPC use by ZLearner") +
+    facet_wrap(~FILE_NUM) +
+    theme(legend.position="none") +
+    xlab("")
+
+
+# E N G L I S H
+
+# Top 5 VPCs in E - LOCNESS (L1 English)
+
+Top5VPCs_L1Eng <- LOCL1English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(FREQUENCY_NS=n()) %>%
+  top_n(5,FREQUENCY_NS) %>%
+  arrange(desc(FREQUENCY_NS))
+Top5VPCs_L1Eng
+
+# Plotted with ZAEBUC English (not very enlightening)
+Top5L1_ZEngLearners <- ZAEBUCEnglishdf %>%
+  group_by(FILE_NUM,LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n()) %>%
+  filter(LEMMA_PREP %in% c("carry out","take away", "give up", "bring up","set up")) %>%
+  arrange(desc(FREQUENCY_ZEng))
+Top5L1_ZEngLearners
+
+# Plotted with ICLE
+Top5L1_ICEngLearners <- ICLEL2English_df %>%
+  group_by(FILE,LEMMA_PREP) %>%
+  summarize(FREQUENCY_ICEng=n()) %>%
+  filter(LEMMA_PREP %in% c("carry out","take away", "give up", "bring up","set up")) %>%
+  arrange(FILE)
+Top5L1_ICEngLearners
+
+n_distinct(Top5L1_ICEngLearners[["FILE"]])
+length(unique(Top5L1_ICEngLearners[["FILE"]]))
+
+
+
+```
+
+```{r}
+# Top 7 ZAEBUC VPCs used by each learner
+Top5ZAr_AllLearners <- ZAEBUCArabicdf %>%
+  group_by(FILE_NUM,LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZArabic=n()) %>%
+  filter(LEMMA_PREP %in% c("ساعد على","استفاد من","أثر على" ,"أدى إلى" ,"وجب على" ,"اعتمد على" ,"قام ب")) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Top5ZAr_AllLearners
+
+Top5ZAr_AllLearners_2 <- ZAEBUCArabicdf %>%
+  filter(LEMMA_PREP %in% c("ساعد على","استفاد من","أثر على" ,"أدى إلى" ,"وجب على" ,"اعتمد على" ,"قام ب"))%>%
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZArabic=n()) %>%
+  arrange(LEMMA_PREP, desc(FREQUENCY_ZArabic))
+Top5ZAr_AllLearners_2
+
+Top5ZAr_AllLearners_2 %>%
+  filter(FREQUENCY_ZArabic >2)
+
+Top5ZAr_AllLearners_3 <- ZAEBUCArabicdf %>%
+  filter(LEMMA_PREP %in% c("أثر على"))%>%
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZArabic=n()) %>%
+  arrange(desc(FREQUENCY_ZArabic))
+Top5ZAr_AllLearners_3
+
+
+Top7ZAr_AllLearners <- Top5ZAr_AllLearners_2 %>%
+  select(FILE_NUM, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/214) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top7ZAr_AllLearners
+
+ggplot(Top7ZAr_AllLearners, aes(fill=LEMMA_PREP, y=Percentage, x=reorder(LEMMA_PREP, -Percentage))) + 
+    geom_bar(position="dodge", stat="identity") + theme(legend.position = "None") + xlab("VPC")
+ggsave(filename= "Top7ZAR.png", device='png', dpi=700) 
+```
+4)	A-E: shares of VPO/VOP; A: broken down by register 
+```{r}
+Top5ZEn_AllLearners_2 <- ZAEBUCEnglishdf %>%
+  filter(LEMMA_PREP %in% c("communicate with","lead to","depend on","know about","talk to","talk about","connect with")) %>%
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n()) %>%
+  arrange(LEMMA_PREP, desc(FREQUENCY_ZEng))
+Top5ZEn_AllLearners_2
+
+Top5ZEn_AllLearners_2 %>%
+  filter(FREQUENCY_ZEng >2)
+
+Top7ZEn_AllLearners <- Top5ZEn_AllLearners_2 %>%
+  select(FILE_NUM, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/388) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top7ZEn_AllLearners
+
+ggplot(Top7ZEn_AllLearners, aes(fill=LEMMA_PREP, y=Percentage, x=reorder(LEMMA_PREP, -Percentage))) + 
+    geom_bar(position="dodge", stat="identity") +labs(y= "Percentage", x = "VPC") + theme(legend.position="none")
+
+ZAEBUCEnglish_PVs_df %>%
+  summarize(n_distinct(FILE_NUM))
+```
+
+```{r}
+length(unique(ICLEL2English_df[["FILE"]]))
+length(unique(LOCL1English_df[["FILE"]]))
+
+Top5ZPV_AllLearners_2 <- ZAEBUCEnglishdf %>%
+  filter(LEMMA_PREP %in% c("go on","sum up","go through","take over", "find out")) %>%
+  group_by(FILE_NUM, LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n()) %>%
+  arrange(LEMMA_PREP, desc(FREQUENCY_ZEng))
+Top5ZPV_AllLearners_2
+
+Top5ZPV_AllLearners_2 %>%
+  filter(FREQUENCY_ZEng >2)
+
+Top5ZPV_AllLearners <- Top5ZPV_AllLearners_2 %>%
+  select(FILE_NUM, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/119) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top5ZPV_AllLearners
+
+
+
+
+```
+```{r}
+Top5ICLE_AllLearners <- ICLEL2English_df %>%
+  filter(LEMMA_PREP %in% c("give up", "take away", "carry out", "bring up", "take up")) %>%
+  group_by(FILE, LEMMA_PREP) %>%
+  summarize(FREQUENCY_ZEng=n()) %>%
+  arrange(LEMMA_PREP, desc(FREQUENCY_ZEng))
+Top5ICLE_AllLearners
+
+Top5ICLE_AllLearners <- Top5ICLE_AllLearners %>%
+  select(FILE, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/2346) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top5ICLE_AllLearners
+
+Top5_English_Learners <- full_join(Top5ZPV_AllLearners, Top5ICLE_AllLearners, by="LEMMA_PREP")
+Top5_English_Learners
+
+write.table(Top5_English_Learners, file="Top5_English_Learners.txt", quote=FALSE, sep=",")
+
+```
+
+```{r}
+
+Top5L1_ZEngLearners <- Top5L1_ZEngLearners %>%
+  select(FILE_NUM, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/119) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top5L1_ZEngLearners
+
+Top5L1_ICEngLearners <- Top5L1_ICEngLearners %>%
+  select(FILE, LEMMA_PREP) %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(N_learners = n()) %>%
+  mutate(Percentage = round(((N_learners/2346) * 100), digits = 2)) %>%
+  arrange(desc(N_learners))
+Top5L1_ICEngLearners
+
+ggplot(Top5L1_ICEngLearners, aes(fill=LEMMA_PREP, y=Percentage, x=reorder(LEMMA_PREP, -Percentage))) + 
+    geom_bar(position="dodge", stat="identity") +labs(y= "Percentage", x = "Phrasal Verb") + theme(legend.position="none")
+
+ggsave(filename= "rplot.png", device='png', dpi=700)
+
+```
+
+
+```{r}
+# Overall frequencies of VPO/VOP for each corpus
+
+# L1 Arabic
+L1Arabic_Order <- L1Arabicdf %>%
+  group_by(Order) %>%
+  summarize(L1_OrderFreq=n()) %>%
+  mutate(Percentage = round(((L1_OrderFreq/sum(L1_OrderFreq)) * 100), digits = 2))
+L1Arabic_Order
+
+# ZAEBUC Arabic
+ZArabic_Order <- ZAEBUCArabicdf %>%
+  group_by(Order) %>%
+  summarize(ZAr_OrderFreq=n()) %>%
+  mutate(Percentage = round(((ZAr_OrderFreq/sum(ZAr_OrderFreq)) * 100), digits = 2))
+ZArabic_Order
+
+# ZAEBUC English
+ZEng_Order <- ZAEBUCEnglishdf %>%
+  group_by(Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  mutate(Percentage = round(((ZEn_OrderFreq/sum(ZEn_OrderFreq)) * 100), digits = 2))
+ZEng_Order
+
+ZPVs_Order <- ZAEBUCEnglish_PVs_df %>%
+  group_by(Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  mutate(Percentage = round(((ZEn_OrderFreq/sum(ZEn_OrderFreq)) * 100), digits = 2))
+ZPVs_Order
+
+# ICLE
+ICLE_Order <- ICLEL2English_df %>%
+  group_by(ORDER) %>%
+  summarize(ICLE_OrderFreq=n()) %>%
+  mutate(Percentage = round(((ICLE_OrderFreq/sum(ICLE_OrderFreq)) * 100), digits = 2))
+ICLE_Order
+
+# LOCNESS
+LOC_Order <- LOCL1English_df %>%
+  group_by(ORDER) %>%
+  summarize(LOC_OrderFreq=n()) %>%
+  mutate(Percentage = round(((LOC_OrderFreq/sum(LOC_OrderFreq)) * 100), digits = 2))
+LOC_Order
+```
+
+
+```{r}
+# VPO/VOP by VPC for each corpus
+
+# L1 Arabic
+L1Arabic_Order_VPC <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(L1_OrderFreq=n()) %>%
+  arrange(desc(L1_OrderFreq))
+L1Arabic_Order_VPC
+
+VPO_L1 <- L1Arabicdf %>%
+  filter(Order == "VPO") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(L1_OrderFreq=n()) %>%
+  arrange(desc(L1_OrderFreq))
+VPO_L1
+
+anti_join(L1Arabic_Order_VPC, VPO_L1, by="LEMMA_PREP")
+
+VOP_L1 <- L1Arabicdf %>%
+  filter(Order == "VOP") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(L1_OrderFreq=n()) %>%
+  arrange(desc(L1_OrderFreq))
+VOP_L1
+
+# ZAEBUC Arabic
+ZArabic_Order_VPC <- ZAEBUCArabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZAr_OrderFreq=n()) %>%
+  arrange(desc(ZAr_OrderFreq))
+ZArabic_Order_VPC
+
+VPO_ZAr <- ZAEBUCArabicdf %>%
+  filter(Order == "VPO") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZAr_OrderFreq=n()) %>%
+  arrange(desc(ZAr_OrderFreq))
+VPO_ZAr
+
+anti_join(ZArabic_Order_VPC, VPO_ZAr, by="LEMMA_PREP")
+
+anti_join(ZArabic_Order_VPC, VPO_ZAr, by="LEMMA_PREP")
+
+VOP_ZAr <- ZAEBUCArabicdf %>%
+  filter(Order == "VOP") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZAr_OrderFreq=n()) %>%
+  arrange(desc(ZAr_OrderFreq))
+VOP_ZAr
+
+anti_join(ZArabic_Order_VPC, VOP_ZAr, by="LEMMA_PREP")
+
+```
+
+```{r}
+
+#install.packages("VennDiagram")
+library(VennDiagram)
+
+grid.newpage()
+# create pairwise Venn diagram
+draw.pairwise.venn(area1=94, area2=242,cross.area=63,
+                   lty = "blank",
+                   category=c("V + P","V + X + P"),fill=c("Green","Blue"))
+```
+```{r}
+grid.newpage()
+# create pairwise Venn diagram
+draw.pairwise.venn(area1=24, area2=67,cross.area=18,
+                   lty = "blank",
+                   category=c("V + P","V + X + P"),fill=c("Green","Blue"))
+```
+
+```{r}
+# ZAEBUC English
+ZEng_Order_VPC <- ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  arrange(desc(ZEn_OrderFreq))
+ZEng_Order_VPC
+
+ZEng_Order_PVs <- ZAEBUCEnglishdf %>%
+  filter(VPC_TYPE == "PV") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  arrange(desc(ZEn_OrderFreq))
+ZEng_Order_PVs
+
+VPO_ZEn <- ZAEBUCEnglishdf %>%
+  filter(Order == "VPO") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  arrange(desc(ZEn_OrderFreq))
+VPO_ZEn
+
+anti_join(ZEng_Order_VPC, VPO_ZEn, by="LEMMA_PREP")
+
+VOP_ZEn <- ZAEBUCEnglishdf %>%
+  filter(Order == "VOP") %>%
+  group_by(LEMMA_PREP, Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  arrange(desc(ZEn_OrderFreq))
+VOP_ZEn
+
+anti_join(ZEng_Order_VPC, VOP_ZEn, by="LEMMA_PREP")
+
+inner_join(VPO_ZEn, VOP_ZEn, by="LEMMA_PREP")
+
+Catg = c("V+P", "Both","V+X+P")
+Freq = c(206, 23, 16)
+
+ZENVPCs_Order <- data.frame(Catg, Freq)
+
+ggplot(ZENVPCs_Order, aes(fill=Catg, y=Freq, x=reorder(Catg, -Freq))) + 
+    geom_bar(position="dodge", stat="identity") +labs(y= "Frequency", x = "Order") + scale_fill_discrete(name = "Order")
+```
+
+
+```{r}
+# ICLE
+ICLE_Order_VPC <- ICLEL2English_df %>%
+  group_by(LEMMA_PREP, ORDER) %>%
+  summarize(ICLE_OrderFreq=n()) %>%
+  arrange(desc(ICLE_OrderFreq))
+ICLE_Order_VPC
+
+# LOCNESS
+LOC_Order_VPC <- LOCL1English_df %>%
+  group_by(LEMMA_PREP, ORDER) %>%
+  summarize(LOC_OrderFreq=n()) %>%
+  arrange(desc(LOC_OrderFreq))
+LOC_Order_VPC
+
+# VPO/VOP by Lemma for each corpus
+
+# L1 Arabic
+L1Arabic_Order_Lem <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  summarize(L1_OrderFreq=n()) %>%
+  arrange(desc(L1_OrderFreq))
+L1Arabic_Order_Lem
+
+
+# ZAEBUC Arabic
+ZArabic_Order_Lem <- ZAEBUCArabicdf %>%
+  group_by(Lemma, Order) %>%
+  summarize(ZAr_OrderFreq=n()) %>%
+  arrange(desc(ZAr_OrderFreq))
+ZArabic_Order_Lem
+
+# ZAEBUC English
+ZEng_Order_Lem <- ZAEBUCEnglishdf %>%
+  group_by(Lemma, Order) %>%
+  summarize(ZEn_OrderFreq=n()) %>%
+  arrange(desc(ZEn_OrderFreq))
+ZEng_Order_Lem
+
+# ICLE
+ICLE_Order_Lem <- ICLEL2English_df %>%
+  group_by(Lemma, ORDER) %>%
+  summarize(ICLE_OrderFreq=n()) %>%
+  arrange(desc(ICLE_OrderFreq))
+ICLE_Order_Lem
+
+# LOCNESS
+LOC_Order_Lem <- LOCL1English_df %>%
+  group_by(Lemma, ORDER) %>%
+  summarize(LOC_OrderFreq=n()) %>%
+  arrange(desc(LOC_OrderFreq))
+LOC_Order_Lem
+
+# " " Comparison charts for all of these? Go searching through to find interesting comparisons
+```
+
+```{r}
+L1Arabic_Order_VPC %>%
+  filter(n() == 2) %>%
+  arrange(LEMMA_PREP)
+```
+
+```{r}
+
+
+L1_spread <- L1Arabic_Order_VPC %>%
+  spread(Order, L1_OrderFreq)
+
+
+ZAR_spread <- ZArabic_Order_VPC %>%
+  spread(Order, ZAr_OrderFreq)
+
+
+ZEn_spread <- ZEng_Order_VPC %>%
+  spread(Order, ZEn_OrderFreq)
+
+ZEn_spread_PVs <- ZEng_Order_PVs %>%
+  spread(Order, ZEn_OrderFreq)
+
+ICLE_spread <- ICLE_Order_VPC %>%
+  spread(ORDER, ICLE_OrderFreq)
+
+
+LOC_spread <- LOC_Order_VPC %>%
+  spread(ORDER, LOC_OrderFreq)
+
+
+L1_spread[is.na(L1_spread)] <- 0
+ZAR_spread[is.na(ZAR_spread)] <- 0
+#ZEn_spread[is.na(ZEn_spread)] <- 0
+ICLE_spread[is.na(ICLE_spread)] <- 0
+LOC_spread[is.na(LOC_spread)] <- 0
+
+ZEn_spread_PVs[is.na(ZEn_spread_PVs)] <- 0
+
+L1_spread
+ZAR_spread
+ZEn_spread
+ICLE_spread
+LOC_spread
+ZEn_spread_PVs
+```
+```{r without constructions that have a value in both columns less than 3}
+#L1_spread <- L1_spread %>%
+  #filter(VOP >= 3|VPO >=3)
+#L1_spread
+
+
+
+```
+
+
+```{r}
+write_xlsx(L1_spread, "L1Ar_Order.xlsx")
+write_xlsx(ZAR_spread, "ZAr_Order.xlsx")
+write_xlsx(ZEn_spread, "ZEn_Order.xlsx")
+write_xlsx(ICLE_spread, "ICLE_Order.xlsx")
+write_xlsx(LOC_spread, "LOC_Order.xlsx")
+write_xlsx(ZEn_spread_PVs, "ZPVs_Order.xlsx")
+
+```
+
+```{r}
+# Overall frequencies of VPO/VOP for each genre - L1 Arabic
+Genre_Order <- L1Arabicdf %>%
+  group_by(Genre, Order) %>%
+  summarize(L1Ar_GenreFreq = n()) %>%
+  mutate(Percentage = round(((L1Ar_GenreFreq/sum(L1Ar_GenreFreq)) * 100), digits = 2))
+Genre_Order
+
+write.table(Genre_Order, file="Genre_OrderStats.txt", quote= FALSE, sep=",")
+
+# VPO/VOP by VPC for each genre
+Law_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'Law') %>%
+  summarize(LawFreq=n()) %>%
+  arrange(desc(LawFreq))
+Law_VPC_Order
+
+Med_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'Medicine') %>%
+  summarize(MedFreq=n()) %>%
+  arrange(desc(MedFreq))
+Med_VPC_Order
+
+Milt_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'Military') %>%
+  summarize(MiltFreq=n()) %>%
+  arrange(desc(MiltFreq))
+Milt_VPC_Order
+
+News_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'News') %>%
+  summarize(NewsFreq=n()) %>%
+  arrange(desc(NewsFreq))
+News_VPC_Order
+
+IT_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'IT') %>%
+  summarize(ITFreq=n()) %>%
+  arrange(desc(ITFreq))
+IT_VPC_Order
+
+Ency_VPC_Order <- L1Arabicdf %>%
+  group_by(LEMMA_PREP, Order) %>%
+  filter(Genre == 'Encyclopedia') %>%
+  summarize(EncyFreq=n()) %>%
+  arrange(desc(EncyFreq))
+Ency_VPC_Order
+
+# VPO/VOP by Lemma for each genre
+
+Law_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'Law') %>%
+  summarize(LawFreq=n()) %>%
+  arrange(desc(LawFreq))
+Law_Lem_Order
+
+Med_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'Medicine') %>%
+  summarize(MedFreq=n()) %>%
+  arrange(desc(MedFreq))
+Med_Lem_Order
+
+Milt_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'Military') %>%
+  summarize(MiltFreq=n()) %>%
+  arrange(desc(MiltFreq))
+Milt_Lem_Order
+
+News_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'News') %>%
+  summarize(NewsFreq=n()) %>%
+  arrange(desc(NewsFreq))
+News_Lem_Order
+
+IT_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'IT') %>%
+  summarize(ITFreq=n()) %>%
+  arrange(desc(ITFreq))
+IT_Lem_Order
+
+Ency_Lem_Order <- L1Arabicdf %>%
+  group_by(Lemma, Order) %>%
+  filter(Genre == 'Encyclopedia') %>%
+  summarize(EncyFreq=n()) %>%
+  arrange(desc(EncyFreq))
+Ency_Lem_Order
+# " " Comparison charts for all of these? Find interesting comparisons
+
+
+
+
+
+
+```
+5)	A+B: breakdown by verb type
+
+```{r}
+
+# L1 Arabic
+L1Arabic_VType <- L1Arabicdf %>%
+  group_by(Type) %>%
+  summarize(L1_TypeFreq=n()) %>%
+  mutate(Percentage = round(((L1_TypeFreq/sum(L1_TypeFreq)) * 100), digits = 2))
+L1Arabic_VType
+
+# ZAEBUC Arabic
+ZArabic_VType <- ZAEBUCArabicdf %>%
+  group_by(Type) %>%
+  summarize(ZAr_TypeFreq=n()) %>%
+  mutate(Percentage = round(((ZAr_TypeFreq/sum(ZAr_TypeFreq)) * 100), digits = 2))
+ZArabic_VType
+
+ZAEBUCArabicdf %>%
+  group_by(LEMMA_PREP, Type) %>%
+  summarize(ZAr_TypeFreq=n())
+
+
+```
+6)	A-C: breakdown by type of intervening material
+
+```{r}
+
+# L1 Arabic
+L1Arabic_Int <- L1Arabicdf %>%
+  group_by(INT_MAT) %>%
+  summarize(L1_IntFreq=n()) %>%
+  mutate(Percentage = round(((L1_IntFreq/sum(L1_IntFreq)) * 100), digits = 2))
+L1Arabic_Int
+
+write.table(L1Arabic_Int, file='L1ArabicInterVenMaterial.txt', quote=FALSE, sep=",")
+
+# ZAEBUC Arabic
+ZArabic_Int <- ZAEBUCArabicdf %>%
+  group_by(INT_MAT) %>%
+  summarize(ZAr_IntFreq=n()) %>%
+  mutate(Percentage = round(((ZAr_IntFreq/sum(ZAr_IntFreq)) * 100), digits = 2))
+ZArabic_Int
+
+# ZAEBUC English
+ZEnglish_Int <- ZAEBUCEnglishdf %>%
+  group_by(INT_MAT) %>%
+  summarize(ZEn_IntFreq=n()) %>%
+  mutate(Percentage = round(((ZEn_IntFreq/sum(ZEn_IntFreq)) * 100), digits = 2))
+ZEnglish_Int
+
+```
+
+```{r Particles}
+Parts_L1Arabic <- L1Arabicdf %>%
+  group_by(Preposition) %>%
+  summarize(Raw_Freq=n()) %>%
+  mutate(Percentage = round(((Raw_Freq/sum(Raw_Freq)) * 100), digits = 2)) %>%
+  arrange(desc(Raw_Freq))
+Parts_L1Arabic
+write.table(Parts_L1Arabic, file = "Particles_L1Arabic.txt", quote = FALSE, sep = ",")
+
+# divide the number of unique constructions with ala by the total number of unique constructions
+
+Ala_df <- L1Arabicdf %>%
+  group_by(LEMMA_PREP) %>%
+  filter(Preposition == "على") %>%
+  summarize(Freq = n())
+Ala_df
+
+# 79 unique constructions with ala
+79/273
+
+
+Parts_ZArabic <- ZAEBUCArabicdf %>%
+  group_by(Preposition) %>%
+  summarize(Raw_Freq=n()) %>%
+  mutate(Percentage = round(((Raw_Freq/sum(Raw_Freq)) * 100), digits = 2)) %>%
+  arrange(desc(Raw_Freq))
+Parts_ZArabic
+#write.table(Parts_L1Arabic, file = "Particles_L1Arabic.txt", quote = FALSE, sep = ",")
+```
+```{r}
+Part_Lemmadf <- L1Arabicdf %>%
+  group_by(Preposition) %>%
+  summarise(distinct_verblemmas = n_distinct(Lemma)) %>%
+  arrange(desc(distinct_verblemmas))
+Part_Lemmadf
+
+Part_Lemmadf_Z <- ZAEBUCArabicdf %>%
+  group_by(Preposition) %>%
+  summarise(distinct_verblemmas = n_distinct(Lemma)) %>%
+  arrange(desc(distinct_verblemmas))
+Part_Lemmadf_Z
+```
+```{r}
+Old_MSA <- read_excel("/Users/samanthacreel/Documents/Dissertation/Results/Master_Files/merged_sheets_clean.xlsx")
+head(Old_MSA)
+```
+```{r}
+length(unique(Old_MSA[["LEMMA_PREP"]]))
+```
+```{r}
+L1Arabicdf %>%
+  group_by(Lemma) %>%
+  summarise(distinct_preps = n_distinct(Preposition)) %>%
+  arrange(desc(distinct_preps))
+```
+```{r hapaxes}
+#ZES
+ZAEBUCEnglishdf %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(freq = n()) %>%
+  filter(freq==1)
+
+#ICLE
+
+ICLEL2English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(freq = n()) %>%
+  filter(freq==1)
+
+#LOCNESS
+
+LOCL1English_df %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(freq = n()) %>%
+  filter(freq==1)
+```
+
+
+

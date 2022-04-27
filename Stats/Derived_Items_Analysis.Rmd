@@ -1,0 +1,53 @@
+---
+title: "VerbDerived_Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(writexl)
+```
+
+```{r}
+L1Arabicdf <- read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/L1Arabic_FinalDataset.xlsx")
+head(L1Arabicdf)
+```
+```{r}
+VNs_PARTS_ONLY <- L1Arabicdf %>%
+  filter(!is.na(VN_PART))
+
+no_PARTS <- L1Arabicdf %>%
+  filter(is.na(VN_PART))
+```
+
+
+```{r}
+Overview_VNPARTS <- VNs_PARTS_ONLY %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(freq = n()) %>%
+  arrange(desc(freq))
+
+Overview_no_PARTS <- no_PARTS %>%
+  group_by(LEMMA_PREP) %>%
+  summarize(freq = n()) %>%
+  arrange(desc(freq))
+Overview_VNPARTS
+Overview_no_PARTS
+```
+
+```{r}
+length(unique(VNs_PARTS_ONLY$LEMMA_PREP))
+inner_join(Overview_no_PARTS, Overview_VNPARTS, by="LEMMA_PREP")
+```
+```{r}
+VNS_PARTS_TABLE <- VNs_PARTS_ONLY %>%
+  group_by(VN_PART, LEMMA_PREP, VPC) %>%
+  summarize(freq = n()) %>%
+  arrange(VN_PART, desc(freq))
+write.table(VNS_PARTS_TABLE, file="VNS_PARTS_TABLE.txt", quote=FALSE, sep=",")
+
+```
+
