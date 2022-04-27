@@ -1,0 +1,262 @@
+---
+ERROR ANALYSIS
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(writexl)
+```
+
+
+
+```{r Data}
+# ZAEBUC Arabic
+head(ZAEBUCArabicdf)
+# ZAEBUC English
+ZAEBUCEnglishdf_er <- read_excel("/Users/samanthacreel/Documents/Dissertation/Final_Datasets/FINAL/ZAEBUCEnglish_FinalDataset.xlsx", guess_max = 10000)
+ZAEBUCEnglishdf_er
+ZAEBUCEnglishdf_er <- ZAEBUCEnglishdf_er %>%
+  filter((ERROR_TYPE != "Missing_Part") %>% replace_na(TRUE))
+ZAEBUCEnglishdf_er
+```
+
+
+
+```{r}
+# What percent of the data contained errors?
+# This can only tell us info about supplying the wrong prep or using one when it's not needed; cannot tell us how many times a prep was NOT used when needed.
+
+length(ZAEBUCEnglishdf_er$LEMMA_PREP)
+length(ZAEBUCEnglishdf_er$ERROR_TYPE)
+unique(ZAEBUCEnglishdf_er$ERROR_TYPE)
+
+ERROR_OVERVIEW <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+ERROR_OVERVIEW
+write.table(ERROR_OVERVIEW, file="Error_types.txt", quote=FALSE, sep=",")
+
+Total_Error_Percentage <- sum(ERROR_OVERVIEW$FREQUENCY/1318)
+Total_Error_Percentage
+
+Total_Errors <- sum(ERROR_OVERVIEW$FREQUENCY)
+Total_Errors
+
+ERROR_OVERVIEW_bytype <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE, VPC_TYPE) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE != "Insertion") %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/156 * 100)), digits = 2)) %>%
+  arrange(VPC_TYPE)
+ERROR_OVERVIEW_bytype
+
+
+
+```
+```{r}
+ERROR_OVERVIEW_PrepVs <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE) %>%
+  filter(VPC_TYPE == "PrepV", !is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+ERROR_OVERVIEW_PrepVs
+
+ERROR_OVERVIEW_PVs <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE) %>%
+  filter(VPC_TYPE == "PV", !is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+ERROR_OVERVIEW_PVs
+
+ERROR_OVERVIEW_PPVs <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE) %>%
+  filter(VPC_TYPE == "PPV", !is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+ERROR_OVERVIEW_PPVs
+
+```
+
+
+```{r}
+# Errors by learner
+
+# Number of errors of each type for each learner
+Errors_by_learner <- ZAEBUCEnglishdf_er %>%
+  group_by(FILE_NUM,ERROR_TYPE) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(FILE_NUM, desc(FREQUENCY))
+Errors_by_learner
+
+# Number of total errors per learner
+Errors_by_learner_Overall <- ZAEBUCEnglishdf_er %>%
+  group_by(FILE_NUM) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(TOTAL_ER_FREQUENCY=n()) %>%
+  arrange(desc(TOTAL_ER_FREQUENCY))
+Errors_by_learner_Overall
+
+sum_errors <- sum(Errors_by_learner_Overall$TOTAL_ER_FREQUENCY)
+sum_errors
+
+# What percent of learners had at least one insertion error?
+Insertion_errors <- ZAEBUCEnglishdf_er %>%
+  group_by(FILE_NUM) %>%
+  filter(ERROR_TYPE == 'Insertion') %>%
+  summarize(INSERTION_ERRORS=n()) %>%
+  arrange(FILE_NUM, desc(INSERTION_ERRORS))
+Insertion_errors
+
+Ins_percentage <- 68/(length(unique(ZAEBUCEnglishdf_er$FILE_NUM)))
+Ins_percentage
+# 19% of learners had at least one insertion error
+
+# What are the Lemmas most frequently occurring in each error category?
+
+VPCs_Errors <- ZAEBUCEnglishdf_er %>%
+  group_by(ERROR_TYPE, Lemma) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(ERROR_TYPE, desc(FREQUENCY))
+VPCs_Errors
+
+# What are the Lemmas most frequently involved in an error?
+VPCs_Errors_Overall <- ZAEBUCEnglishdf_er %>%
+  group_by(Lemma) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(desc(FREQUENCY))
+VPCs_Errors_Overall
+
+#Interesting to do number of errors per word count of essays?
+
+# What percent of learners had at least one error?
+Atleast1_error <- ZAEBUCEnglishdf_er %>%
+  group_by(FILE_NUM) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(Num_errors=unique(n())) %>%
+  arrange(desc(Num_errors))
+Atleast1_error
+
+length(unique(ZAEBUCEnglishdf_er$FILE_NUM))
+109/358
+# 31% of learners had at least one VPC-related error
+
+ZAEBUCEnglishdf_er %>%
+  group_by(Lemma, Preposition) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE == "Insertion") %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(Lemma, desc(FREQUENCY))
+
+ZAEBUCEnglishdf_er %>%
+  group_by(FILE_NUM, Preposition) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE == "Insertion", Lemma == "affect") %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(desc(FREQUENCY))
+
+ZAEBUCEnglishdf_er %>%
+  group_by(Level) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE == "Insertion", Lemma == "affect") %>%
+  summarize(FREQUENCY=n()) %>%
+  arrange(desc(FREQUENCY))
+
+```
+```{r}
+Types <- c("PrepV", "PV", "PPV")
+Percentages <- c(80.43,8.70, 10.87)
+Error_Type <- c(rep("Particle", 3))
+Part_Errors <- data.frame(Error_Type, Types, Percentages)
+Part_Errors
+
+ggplot(Part_Errors, aes(y=Percentages, x=reorder(Types,Percentages), fill=Types)) + 
+    geom_bar(position="stack", stat="identity") + coord_flip() + xlab("VPC Type") + ylab("Percentage") + theme(legend.position = "none")
+
+ggsave(filename= "PartErrors_byType.png", device='png', dpi=700)
+```
+```{r}
+Types <- c("PrepV", "PV", "PPV")
+Error_Rate <- c(4.26,2.76,13.95)
+Error_Rate_df <- data.frame(Types, Error_Rate)
+Error_Rate_df
+
+ggplot(Error_Rate_df, aes(y=Error_Rate, x=reorder(Types,-Error_Rate), fill=Types)) + 
+    geom_bar(position="dodge", stat="identity") + xlab("VPC Type") + ylab("Error Rate") + theme(legend.position = "none")
+
+ggsave(filename= "Error_Rate.png", device='png', dpi=700)
+```
+```{r}
+ERROR_Parts <- ZAEBUCEnglishdf_er %>%
+  group_by(Preposition) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE=="Incorrect_Choice") %>%
+  summarize(FREQUENCY = n()) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+ERROR_Parts
+
+sum(ERROR_Parts$FREQUENCY)
+```
+```{r}
+ERROR_OVERVIEW_bylevel <- ZAEBUCEnglishdf_er %>%
+  group_by(Level, ERROR_TYPE) %>%
+  filter(!is.na(ERROR_TYPE), !is.na(Level)) %>%
+  summarize(FREQUENCY = n()) %>%
+  #mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(ERROR_TYPE,desc(FREQUENCY))
+ERROR_OVERVIEW_bylevel
+
+ERROR_OVERVIEW_bylevel2 <- ZAEBUCEnglishdf_er %>%
+  group_by(Level) %>%
+  filter(!is.na(ERROR_TYPE)) %>%
+  summarize(FREQUENCY = n()) %>%
+  #mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(FREQUENCY))
+ERROR_OVERVIEW_bylevel2
+
+Learnersperlevel <- ZAEBUCEnglishdf_er %>%
+  group_by(Level) %>%
+  filter(!is.na(Level)) %>%
+  summarize(N_learners = n_distinct(FILE_NUM)) %>%
+  mutate(Percentage = round(((N_learners/sum(N_learners)) * 100), digits = 2))
+Learnersperlevel
+
+
+sum(Learnersperlevel$N_learners)
+
+```
+```{r}
+ggplot(ERROR_OVERVIEW_bylevel, aes(fill=ERROR_TYPE, y=FREQUENCY, x=ERROR_TYPE)) + 
+    geom_bar(position="dodge", stat="identity") +
+    #ggtitle("Average Types and Tokens per Language") +
+    facet_wrap(~Level) +
+    theme(legend.position="none") +
+    xlab("")
+
+ggplot(ERROR_OVERVIEW_bylevel, aes(fill=ERROR_TYPE, y=FREQUENCY, x=Level)) + 
+    geom_bar(position="dodge", stat="identity") +
+    #ggtitle("Average Types and Tokens per Language") +
+    xlab("Level") + ylab("Frequency") + scale_fill_discrete(name = "Error Type", labels = c("Incorrect Particle", "Incorrect Verb", "Insertion", "Semantic", "Stranding"))
+
+ggsave(filename= "Errors_bylevel.png", device='png', dpi=700)
+```
+
+```{r}
+ZAEBUCEnglishdf_er %>%
+  group_by(Lemma) %>%
+  filter(!is.na(ERROR_TYPE), ERROR_TYPE=="Incorrect_Choice") %>%
+  summarize(FREQUENCY = n_distinct(Lemma)) %>%
+  mutate(Percentage = round(((FREQUENCY/sum(FREQUENCY)) * 100), digits = 2)) %>%
+  arrange(desc(Percentage))
+
+```
+
